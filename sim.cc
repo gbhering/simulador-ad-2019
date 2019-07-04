@@ -25,14 +25,14 @@ struct Evento {
 	evento_t tipo;
 	unsigned dur;
 	Evento *next = NULL;
-	Evento(evento_t tipo, unsigned dur = 0): tipo(tipo), dur(dur) {};
+	Evento(evento_t tipo, unsigned dur): tipo(tipo), dur(dur) {};
 };
 
-Evento* eventos = new Evento(head);
+Evento* eventos = new Evento(head,0);
 Evento* tail = eventos;
 
-auto inline push(const evento_t t) {
-	tail->next = new Evento(t);
+void inline push(const evento_t t, int dur = 0) {
+	tail->next = new Evento(t, dur);
 	tail = tail->next;
 }
 
