@@ -1,13 +1,21 @@
 #include <iostream>
 #include <random>
+#include <cmath>
 
 // Constantes da simulação
 auto const k = 4;
+auto const mi = 1;
+auto const lambda = 0.5;
+auto const rho = lambda / mi;
 auto const FCFS = true;
 auto const verbose = true;
 
 // Objeto gerador de números pseudo-aleatórios com seed 51520191
 std::minstd_rand0 gerador (51520191);
+float tempo_chegada() { 
+	float uni = static_cast <float> (gerador()) / static_cast <float> (2147483647);
+	return -log(1.0-uni)/lambda; 
+}
 
 // Para conveniencia, os tipos de eventos tem nomes legiveis definidos aqui
 enum evento_t { head, chegada, servico };
