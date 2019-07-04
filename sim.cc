@@ -36,6 +36,16 @@ void inline push(const evento_t t, int dur = 0) {
 	tail = tail->next;
 }
 
+auto inline pop() {
+	if (eventos == tail) 
+		return eventos;
+	auto e = eventos->next;
+	if (eventos->next == tail)
+		tail = eventos;
+	eventos->next = eventos->next->next;
+	return e;
+}
+
 void inline serve() {
 	std::cout << "Serviço de " << ( /*gerador() %*/ 1000 ) << " segundos" << std::endl;
 }
