@@ -47,21 +47,25 @@ auto inline pop() {
 }
 
 void inline serve() {
-	std::cout << "Serviço de " << ( /*gerador() %*/ 1000 ) << " segundos" << std::endl;
+	std::cout << "Serviço de " << 1 << "s" << std::endl;
 }
 
-void simul(Evento* e) {
-	if( e->tipo == chegada )
-		serve();
+void inline nova_chegada() {
+	auto t = tempo_chegada();
+	std::cout << "Nova chegada em " << t << "s" << std::endl;
+	push(chegada, t);
 }
 
 int main(int argc, char const *argv[]) {
-	auto e = eventos;
+	nova_chegada(); // primeira chegada
 	
 	int lim = k;
-	while(e->next && lim--) {
-		e = e->next;
-		simul(e);
+	while( eventos != tail && --lim) {
+		auto e = pop();
+		if ( e->tipo == chegada )
+			nova_chegada();
+		else if ( e->tipo == fregues )
+			serve();
 	}
 
 	return 0;
