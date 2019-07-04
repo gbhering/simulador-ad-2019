@@ -18,7 +18,7 @@ float tempo_chegada() {
 }
 
 // Para conveniencia, os tipos de eventos tem nomes legiveis definidos aqui
-enum evento_t { head, chegada, servico };
+enum evento_t { head, chegada, fregues };
 
 // Estrutura de dados que descreve cada evento
 struct Evento {
