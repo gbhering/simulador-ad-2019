@@ -56,7 +56,7 @@ void inline nova_chegada() {
 	push(chegada, t);
 }
 
-int main(int argc, char const *argv[]) {
+int main(void) {
 	nova_chegada(); // primeira chegada
 	
 	int lim = k;
