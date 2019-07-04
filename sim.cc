@@ -12,8 +12,8 @@ auto const verbose = true;
 
 // Objeto gerador de números pseudo-aleatórios com seed 51520191
 std::minstd_rand0 gerador (51520191);
-float tempo_chegada() { 
-	float uni = static_cast <float> (gerador()) / static_cast <float> (2147483647);
+auto exponencial(const auto lambda) { 
+	auto uni = static_cast <float> (gerador()) / static_cast <float> (2147483647);
 	return -log(1.0-uni)/lambda; 
 }
 
@@ -51,7 +51,7 @@ void inline serve() {
 }
 
 void inline nova_chegada() {
-	auto t = tempo_chegada();
+	auto t = exponencial(lambda);
 	std::cout << "Nova chegada em " << t << "s" << std::endl;
 	push(chegada, t);
 }
