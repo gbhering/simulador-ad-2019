@@ -1,0 +1,98 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[brazilian]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{url}
+\usepackage{listings}
+\usepackage{xcolor} 
+
+\newcommand*\barra[1]{\overline{#1}}
+\newcommand*\Time[1][]{\overline{ T_{#1} }}
+\newcommand*\Wait[1][]{\overline{ W_{#1} }}
+\newcommand*\Serv[1][]{\overline{ X_{#1} }}
+\newcommand*\Peop[1][]{\overline{ N_{#1} }}
+
+\lstset{
+    frame=tb, 
+    tabsize=2,
+    showstringspaces=false,
+    numbers=left, 
+    commentstyle=\color{gray}, 
+    keywordstyle=\color{blue}, 
+    stringstyle=\color{red} 
+}
+
+\title{Trabalho de Simulação de MAB-515}
+\author{ Gabriel Bhering Dominoni }
+\date{8 de Julho de 2019}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+\pagebreak
+
+\tableofcontents
+
+\pagebreak
+
+\section{Introdução}
+O programa foi implementado em C++, utilizando de todos os recursos da linguagem para máxima eficiência. A constantes do programa, as taxas, disciplina, kmin e verbose, são definidas em código pré-compilação para dar a oportunidade do compilador otimiza-las. 
+
+Como tradicionalmente, existe uma lista de eventos, e um laço que a processa. A lista de eventos está armazenada numa fila ordenada própria da linguagem. A ordenação muda de acordo com a disciplina escolhida. Especificamente, existem apenas dois tipos de evento - chegadas e partidas - e se a fila for FCFS, a fila é executada na ordem normal, se for LCFS, as partidas são executadas em ordem inversa.
+
+Os eventos são estruturas básicas, contendo o tempo de entrada na fila, tipo e duração. Os tempos são contados em variáveis globais.
+
+\section{Testes de Correção}
+A implementação 
+
+\section{Estimativa da fase transiente}
+
+\section{Resultados}
+
+\subsection{Deduções}
+
+\subsubsection{Modelagem Geral}
+Estamos modelando uma fila do tipo M/M/1, onde o serviço é uma variavel exponencial e as chegadas acontecem por um processo Poisson e há apenas um servidor. Definimos: 
+\begin{itemize} 
+\item $W$ tempo em espera 
+\item $X$ tempo de serviço  
+\item $T$ tempo total na fila 
+\item $\rho$ probabilidade do servidor estar ocupado, ou utilização do sistema
+\end{itemize} 
+
+Para este simulador, temos que $X \sim Exp( \mu = 1 )$, portanto $\overline{X} = 1$. Calcula-se $\rho$ utilizando o resultado de Little, considerando-se apenas o servidor: $\Peop[s] = \lambda T$, que 
+
+\subsubsection{Expectativa do Tempo de Espera FCFS}
+Em uma fila com apenas um servidor e disciplina FCFS, o tempo total que um freguês espera passar é a expectativa do tempo de espera em fila somado à expectativa de seu serviço. Isto é: $\Time = \Wait + \Serv$. O tempo em espera, por Little 
+\subsubsection{Variancia do Tempo de Espera FCFS}
+\subsubsection{Expectativa do Numero de Pessoas em Espera FCFS}
+\subsubsection{Variancia do Numero de Pessoas em Espera FCFS}
+\subsubsection{Expectativa do Tempo de Espera LCLS}
+\subsubsection{Variancia do Tempo de Espera LCLS}
+\subsubsection{Expectativa do Numero de Pessoas em Espera LCLS}
+\subsubsection{Variancia do Numero de Pessoas em Espera LCLS}
+
+\section{Conclusões}
+
+\section{Anexo}
+
+O código se encontra em: \url{github.com/gbhering/simulador-ad-2019}. Aqui se encontram descritas as rotinas mais relevantes do programa.
+
+\begin{lstlisting}[language=C++, caption={Loop principal do programa}]
+nova_chegada(); // primeira chegada
+
+int lim = k;
+while( eventos != tail && --lim) {
+	auto e = pop();
+	if ( e->tipo == chegada )
+		nova_chegada();
+	else if ( e->tipo == fregues )
+		serve();
+}
+\end{lstlisting}
+
+\end{document}
+
