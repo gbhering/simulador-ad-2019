@@ -34,3 +34,10 @@
 
 # Other stuff
 test*.cc
+
+# Report stuff
+report/*.log
+report/*.aux
+report/*.pdf
+report/*.gz
+report/*.toc
