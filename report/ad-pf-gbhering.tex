@@ -7,11 +7,7 @@
 \usepackage{listings}
 \usepackage{xcolor} 
 
-\newcommand*\barra[1]{\overline{#1}}
-\newcommand*\Time[1][]{\overline{ T_{#1} }}
-\newcommand*\Wait[1][]{\overline{ W_{#1} }}
-\newcommand*\Serv[1][]{\overline{ X_{#1} }}
-\newcommand*\Peop[1][]{\overline{ N_{#1} }}
+\newcommand*\barra[2][]{\overline{ #1_{#2} }}
 
 \lstset{
     frame=tb, 
@@ -55,25 +51,8 @@ A implementação
 \subsection{Deduções}
 
 \subsubsection{Modelagem Geral}
-Estamos modelando uma fila do tipo M/M/1, onde o serviço é uma variavel exponencial e as chegadas acontecem por um processo Poisson e há apenas um servidor. Definimos: 
-\begin{itemize} 
-\item $W$ tempo em espera 
-\item $X$ tempo de serviço  
-\item $T$ tempo total na fila 
-\item $\rho$ probabilidade do servidor estar ocupado, ou utilização do sistema
-\end{itemize} 
-
-Para este simulador, temos que $X \sim Exp( \mu = 1 )$, portanto $\overline{X} = 1$. Calcula-se $\rho$ utilizando o resultado de Little, considerando-se apenas o servidor: $\Peop[s] = \lambda T$, que 
-
-\subsubsection{Expectativa do Tempo de Espera FCFS}
-Em uma fila com apenas um servidor e disciplina FCFS, o tempo total que um freguês espera passar é a expectativa do tempo de espera em fila somado à expectativa de seu serviço. Isto é: $\Time = \Wait + \Serv$. O tempo em espera, por Little 
-\subsubsection{Variancia do Tempo de Espera FCFS}
-\subsubsection{Expectativa do Numero de Pessoas em Espera FCFS}
-\subsubsection{Variancia do Numero de Pessoas em Espera FCFS}
-\subsubsection{Expectativa do Tempo de Espera LCLS}
-\subsubsection{Variancia do Tempo de Espera LCLS}
-\subsubsection{Expectativa do Numero de Pessoas em Espera LCLS}
-\subsubsection{Variancia do Numero de Pessoas em Espera LCLS}
+\subsubsection{Tempo de Espera}
+\subsubsection{Número de Pessoas em Espera}
 
 \section{Conclusões}
 
