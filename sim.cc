@@ -1,72 +1,44 @@
-#include <iostream>
-#include <random>
 #include <cmath>
+#include <iostream>
+#include <limits>
+using namespace std;
 
-// Constantes da simulação
-auto const k = 4;
-auto const mi = 1;
-auto const lambda = 0.5;
-auto const rho = lambda / mi;
-auto const FCFS = true;
-auto const verbose = true;
+// constantes do programa
+unsigned const RODADAS = 10;
+unsigned const KMIN = 1000000;
+float const MI = 1.0;
+float const LAMBDA = 0.9;
 
-// Objeto gerador de números pseudo-aleatórios com seed 51520191
-std::minstd_rand0 gerador (51520191);
-auto exponencial(const auto lambda) { 
-	auto uni = static_cast <float> (gerador()) / static_cast <float> (2147483647);
-	return -log(1.0-uni)/lambda; 
-}
+float exponencial(float const _taxa) {
+	auto uni = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+	return -log(1.0-uni)/_taxa;
+} 
 
-// Para conveniencia, os tipos de eventos tem nomes legiveis definidos aqui
-enum evento_t { head, chegada, fregues };
+float T = 0.0;
+float W_0 = 0.0;
+unsigned R = 0;
+float prox_chegada = 0.0;
 
-// Estrutura de dados que descreve cada evento
-struct Evento {
-	evento_t tipo;
-	unsigned dur;
-	Evento *next = NULL;
-	Evento(evento_t tipo, unsigned dur): tipo(tipo), dur(dur) {};
-};
+void rodada_fcfs() {
+	float w_i = 0, n = 0;
+	while (n < KMIN) {
+		T += prox_chegada;
+		W_0 = prox_chegada > W_0 ? 0 : W_0 - prox_chegada;
+		w_i = (w_i*n + W_0)/(n+1);
+		n += 1;
+		W_0 += exponencial(1.0);
+		prox_chegada = exponencial(LAMBDA);
+	}
+	cout << "R" << R << ": E[W]=" << w_i << " e E[Nq]=" << w_i*n/T << " e T=" << T << endl;
+	T = 0.0;
+} 
 
-Evento* eventos = new Evento(head,0);
-Evento* tail = eventos;
-
-void inline push(const evento_t t, int dur = 0) {
-	tail->next = new Evento(t, dur);
-	tail = tail->next;
-}
-
-auto inline pop() {
-	if (eventos == tail) 
-		return eventos;
-	auto e = eventos->next;
-	if (eventos->next == tail)
-		tail = eventos;
-	eventos->next = eventos->next->next;
-	return e;
-}
-
-void inline serve() {
-	std::cout << "Serviço de " << 1 << "s" << std::endl;
-}
-
-void inline nova_chegada() {
-	auto t = exponencial(lambda);
-	std::cout << "Nova chegada em " << t << "s" << std::endl;
-	push(chegada, t);
-}
 
 int main(void) {
-	nova_chegada(); // primeira chegada
-	
-	int lim = k;
-	while( eventos != tail && --lim) {
-		auto e = pop();
-		if ( e->tipo == chegada )
-			nova_chegada();
-		else if ( e->tipo == fregues )
-			serve();
-	}
-
+	srand(51520191);
+	cout << "rodadas=" << RODADAS << " kmin=" << KMIN << " lambda=" << LAMBDA << endl;
+	prox_chegada = exponencial(LAMBDA);
+	while (R++ < RODADAS)
+		rodada_fcfs();
 	return 0;
 }
