@@ -8,11 +8,12 @@ using namespace std;
 
 // Constantes do programa
 bool const FCFS = true;
-unsigned const RODADAS = 200;
-float const KMIN = 100;
+unsigned const RODADAS = 3200;
+float const KMIN = 10000;
 float const MI = 1.0;
 float const LAMBDA = 0.4;
 unsigned const VERBOSE = 1;
+bool const TESTE = true;
 
 float W[RODADAS] = {};
 float N_q[RODADAS] = {};
@@ -37,14 +38,16 @@ void entra_servidor(float& w_i, float& k) {
 	if constexpr (FCFS) {
 		Evento proximo = espera.front();
 		espera.pop_front();
-		k += (proximo.r == R);
-		w_i += (proximo.r == R) ? T - proximo.t : 0;
+		if (proximo.r == R) {
+			w_i += T-proximo.t; ++k;
+		}
 	}
 	else {
 		Evento proximo = espera.back();
 		espera.pop_back();
-		k += (proximo.r == R);
-		w_i += (proximo.r == R) ? T - proximo.t : 0;
+		if (proximo.r == R) {
+			w_i += T-proximo.t; ++k;
+		}
 	}
 }
 
@@ -66,10 +69,11 @@ void rodada() {
 		if ( e.tipo == chegada ) {
 			// Uma nova pessoa entra no sistema 
 			N++; 
-			// Próxima chegada é agendada
-			espera.push_back(e);
 			// Esta chegada é aramazenada
-			fila.emplace(chegada, T + exponencial(LAMBDA), R);
+			espera.push_back(e);
+			// Próxima chegada é agendada
+			if constexpr (!TESTE)
+				fila.emplace(chegada, T + exponencial(LAMBDA), R);
 			// Caso seja a única pessoa no sistema, 
 			if ( N == 1 ) 
 				// entra imediatemente no servidor
@@ -94,26 +98,27 @@ void rodada() {
 		cout << R<< '(' << W[R] << ", " << N_q[R] << ')' << endl;
 } 
 
-
+void teste1() { for(int i = 0; i < KMIN; ++i) fila.emplace(chegada, T, R); }
+void teste2() { for(int i = 0; i < KMIN; ++i) fila.emplace(chegada, T+i, R); }
 int main(void) {
-	cout << "rodadas=" << RODADAS 
-		 << " kmin=" << KMIN 
-		 << " lambda=" << LAMBDA 
-		 << endl;
-
 	// primeira chegada é agendada
-	fila.emplace(chegada, T + exponencial(LAMBDA), R);
-	while (R++ < RODADAS) 
+	// fila.emplace(chegada, T + exponencial(LAMBDA), R);
+	while (R < RODADAS) {
+		teste2();
 		rodada();
+		R++;
+	}
+
+	cout<<"rodadas="<<RODADAS<<" kmin="<<KMIN<<" lambda="<<LAMBDA<<endl;
 
 	// ao fim das rodadas, calculamos as médias...
 	float ENq = 0, VNq = 0, EW = 0, VW = 0;
-	for (unsigned i = 0; i <= RODADAS; ++i) {
+	for (unsigned i = 0; i < RODADAS; ++i) {
 		ENq += N_q[i]/RODADAS;
 		EW += W[i]/RODADAS;
 	}
 	// ...depois as variancias
-	for (unsigned i = 0; i <= RODADAS; ++i) {
+	for (unsigned i = 0; i < RODADAS; ++i) {
 		VNq += pow( (N_q[i]-ENq), 2 ) / ( RODADAS-1 );
 		VW += pow( W[i]-EW, 2 ) / ( RODADAS-1 );
 	}
