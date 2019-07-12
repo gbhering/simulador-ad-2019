@@ -9,11 +9,11 @@ using namespace std;
 // Constantes do programa
 bool const FCFS = true;
 unsigned const RODADAS = 3200;
-float const KMIN = 10000;
+float const KMIN = 2000;
 float const MI = 1.0;
-float const LAMBDA = 0.4;
-unsigned const VERBOSE = 1;
-bool const TESTE = true;
+float const LAMBDA = 0.9;
+unsigned const VERBOSE = 0;
+bool const TESTE = false;
 
 float W[RODADAS] = {};
 float N_q[RODADAS] = {};
@@ -21,6 +21,7 @@ float N_q[RODADAS] = {};
 // Variaveis da execução
 float T = 0.0;					// Tempo do simulador
 float N = 0;					// Pessoas encontradas no sistema 
+float N_PREV = 0;					// Pessoas encontradas no sistema 
 unsigned R = 0;					// Contador de Rodada
 priority_queue<Evento> fila;	// Nossa fila de eventos
 deque<Evento> espera;			// Os tempos de chegada para medida futura
@@ -87,6 +88,11 @@ void rodada() {
 			if ( N > 0 ) 
 				entra_servidor(w_i, k);
 		}
+		else if ( e.tipo == deltat ) {
+			// cout << N << ',';
+			// fila.emplace(deltat, T+10, R);
+			N_PREV = N;
+		}
 	}
 
 	// Guarda-se as estatisticas ao fim da rodada em vetores 
@@ -102,14 +108,14 @@ void teste1() { for(int i = 0; i < KMIN; ++i) fila.emplace(chegada, T, R); }
 void teste2() { for(int i = 0; i < KMIN; ++i) fila.emplace(chegada, T+i, R); }
 int main(void) {
 	// primeira chegada é agendada
-	// fila.emplace(chegada, T + exponencial(LAMBDA), R);
+	fila.emplace(chegada, T + exponencial(LAMBDA), R);
+	fila.emplace(deltat, T, R);
 	while (R < RODADAS) {
-		teste2();
 		rodada();
 		R++;
 	}
 
-	cout<<"rodadas="<<RODADAS<<" kmin="<<KMIN<<" lambda="<<LAMBDA<<endl;
+	cout<<endl<<"rodadas="<<RODADAS<<" kmin="<<KMIN<<" lambda="<<LAMBDA<<endl;
 
 	// ao fim das rodadas, calculamos as médias...
 	float ENq = 0, VNq = 0, EW = 0, VW = 0;

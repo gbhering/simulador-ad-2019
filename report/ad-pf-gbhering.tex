@@ -8,6 +8,9 @@
 \usepackage{listings}
 \usepackage{xcolor} 
 
+\usepackage{graphicx}
+\graphicspath{ {./} }
+
 \newcommand*\barra[2][]{\overline{ #1_{#2} }}
 
 \lstset{
@@ -54,14 +57,40 @@ Os primeiro teste feito foi o caso trivial, reduzindo a simulação para D/D/1. 
 Após, testes onde a capacidade do programa de gerar novas chegadas foi suprimida e em cada rodada foi colocada uma distribuição deterministica de fregueses. Foram feitos os seguintes testes com os seguintes resultados, cada qual com 3200 rodadas:
 
 \begin{itemize}
-
+\item KMIN chegadas simultaneas em T \\
+E[W]=4592.51 E[Nq]=5000.49 Var[W]=106925 Var[Nq]=1314.99 
+\item KMIN chegadas começando em T com 1 segundo de diferença \\
+E[W]=16.4833 E[Nq]=16.3933 Var[W]=416.089 Var[Nq]=405.889 
 \end{itemize}
 
 
 
 \section{Estimativa da fase transiente}
+Para estimar a fase transiente, o programa foi ligeriamente modificado. Um terceiro tipo de evento foi adicionado: deltat. Tudo que acontece quando um evento deltat é processado é coletar uma diferença entre o número de pessoas no último deltat e  agendar um novo. Podemos observar a diferença entre números de pessoas para estimar estabilidade. Os resultados foram um tanto complicados de interpretar.
+
+\includegraphics[width=\textwidth]{n_evo_1.png}
+
+\includegraphics[width=\textwidth]{n_evo_2.png}
+
+Na primeira figura, observamos o número de pessoas no sistema ao longo de 2000 segundos com taxa 0.9. Na segunda ao longo de 100, com taxa 0.4. Não é trivial observar onde começa a fase transiente. As coletas de deltat não ajudaram muito, tendo variações bruscas ao longo do experimento sem aparentemente estabilizar.
 
 \section{Resultados}
+\subsection{Resultados da Simulação}
+Utilizando k = 2000, e 3200 rodadas.
+\begin{center}
+\begin{tabular}{||c c c c c c||} 
+ \hline
+  $\lambda$ & $\barra{W}$ & $Var(W_{FCFS})$ & $Var(W_{LCFS})$ & $\barra{N_q}$ & $Var(N_{q})$ \\ [0.5ex] 
+ \hline
+0.2 & 0.274 & 0.001188 & 0.001187 & 0.055 & 0.00005 \\
+0.4 & 0.69193 & 0.006 & 0.00599 & 0.278 & 0.0011 \\
+0.6 & 1.540 & 0.0485 & 0.0483 & 0.931 & 0.0209 \\
+0.8 & 4.01 & 24 & 0.9809 & 3.3 & 0.7473 \\
+0.9 & 9.03021 & 15.0802 & 11.2732 & 8.2334 & 13.4159 \\
+ \hline
+\end{tabular}
+\end{center}
+
 \subsection{Resultados Analíticos}
 \begin{center}
 \begin{tabular}{||c c c c c c||} 

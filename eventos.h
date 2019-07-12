@@ -1,5 +1,5 @@
 // apenas para conveniencia, os tipos tem nomes próprios
-enum Tipo { chegada, partida };
+enum Tipo { chegada, partida, deltat };
 
 // A estrutura que armazena os dados do eventos exponenciais
 struct Evento {
