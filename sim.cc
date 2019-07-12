@@ -6,11 +6,11 @@
 using namespace std;
 
 // Constantes do programa
-bool const FCFS = false;
-float const RODADAS = 1;
-float const KMIN = 10;
+bool const FCFS = true;
+float const RODADAS = 10;
+float const KMIN = 100000;
 float const MI = 1.0;
-float const LAMBDA = 0.9;
+float const LAMBDA = 0.4;
 bool const VERBOSE = true;
 
 // Variaveis da execução
@@ -20,13 +20,6 @@ float N = 0;					// Pessoas encontradas na fila
 float R = 0;					// Contador de Rodada
 priority_queue<Evento> fila;	// Nossa fila de eventos
 deque<Evento> espera;			// Os tempos de chegada para medida futura
-
-void priwaits() {
-	cout << '$' << ' ';
-	for (auto x: espera)
-		cout << x.t << ' ';
-	cout << endl;
-}
 
 void entra_servidor(float& w_i, float& k) {
 	fila.emplace(partida, T + exponencial(MI), R);
@@ -42,7 +35,6 @@ void entra_servidor(float& w_i, float& k) {
 		k += (proximo.r == R);
 		w_i += (proximo.r == R) ? T - proximo.t : 0;
 	}
-	priwaits();
 }
 
 void rodada() {
@@ -54,7 +46,6 @@ void rodada() {
 		N_qi += espera.size()*delta;
 		if ( e.tipo == chegada ) {
 			espera.push_back(e);
-			priwaits();
 			N++;
 			fila.emplace(chegada, T + exponencial(LAMBDA), R);
 			if ( N == 1 ) 
