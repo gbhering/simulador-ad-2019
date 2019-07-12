@@ -3,6 +3,7 @@
 \usepackage[brazilian]{babel}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
+\usepackage{amssymb}
 \usepackage{url}
 \usepackage{listings}
 \usepackage{xcolor} 
@@ -21,7 +22,7 @@
 
 \title{Trabalho de Simulação de MAB-515}
 \author{ Gabriel Bhering Dominoni }
-\date{8 de Julho de 2019}
+\date{12 de Julho de 2019}
 
 \begin{document}
 
@@ -35,11 +36,11 @@
 \pagebreak
 
 \section{Introdução}
-O programa foi implementado em C++, utilizando de todos os recursos da linguagem para máxima eficiência. A constantes do programa, as taxas, disciplina, kmin e verbose, são definidas em código pré-compilação para dar a oportunidade do compilador otimiza-las. 
+O programa foi implementado em C++, utilizando de todos os recursos da linguagem para máxima eficiência. A constantes do programa - lambda, disciplina e kmin - são definidas em código pré-compilação para que o compilador possa otimiza-las. \\
 
-Como tradicionalmente, existe uma lista de eventos, e um laço que a processa. A lista de eventos está armazenada numa fila ordenada própria da linguagem. A ordenação muda de acordo com a disciplina escolhida. Especificamente, existem apenas dois tipos de evento - chegadas e partidas - e se a fila for FCFS, a fila é executada na ordem normal, se for LCFS, as partidas são executadas em ordem inversa.
+Os eventos são armazenados numa fila de prioridade que ordena eventos cronologicamente. A função principal insere a primeira chegada, e roda a simulação R vezes, resultando em vetores com as estatisticas de cada rodada. As variancias e médias entre rodadas são então calculadas, junto com seus intervalos de confiança. \\
 
-Os eventos são estruturas básicas, contendo o tempo de entrada na fila, tipo e duração. Os tempos são contados em variáveis globais.
+Há apenas dois tipos de evento nesta simulação: chegads e partidas. Em ambos os tipos de evento, estatisticas referentes ao número de pessoas em espera e tempo de espera são coletadas. Chegadas aumentam o número de pessoas na fila, e o número de pessoas em espera, além de agendar uma partida caso não haja outros fregueses na fila. Partidas naturamente diminuem os contadores de fila e espera além de agendar a próxima partida caso haja fregueses em espera. \\
 
 \section{Testes de Correção}
 A implementação 
@@ -47,12 +48,42 @@ A implementação
 \section{Estimativa da fase transiente}
 
 \section{Resultados}
+\subsection{Resultados Analíticos}
+\begin{center}
+\begin{tabular}{||c c c c c c||} 
+ \hline
+  $\lambda$ & $\barra{W}$ & $Var(W_{FCFS})$ & $Var(W_{FCFS})$ & $\barra{N_q}$ & $Var(N_{q})$ \\ [0.5ex] 
+ \hline
+0.2 & 0.25 & 0.5625 & 0.71875 & 0.05 & 0.0725 \\
+0.4 & 0.66... & 1.77... & 3.259259... & 0.266... & 0.5511... \\
+0.6 & 1.5 & 5.25 & 16.5 & 0.9 & 2.79 \\
+0.8 & 4 & 24 & 184 & 3.2 & 18.56 \\
+0.9 & 9 & 99 & 1719 & 8.1 & 88.29 \\
+ \hline
+\end{tabular}
+\end{center}
 
-\subsection{Deduções}
+\subsubsection{Fórmulas Analíticas}
+\begin{center}
+\begin{tabular}{||c c c||} 
+ \hline
+  & Média & Variância  \\ [0.5ex] 
+ \hline
+ W_{FCFS} & $\frac{\lambda}{1-\lambda}$ & $\frac{2\lambda-\lambda^2}{(1-\lambda)^2}$  \\ [2ex] 
+ W_{FCFS} & $\frac{\lambda}{1-\lambda}$ & $\frac{2\lambda-\lambda^2+\lambda^3}{(1-\lambda)^3}$  \\ [2ex] 
+ N_q & $\frac{\lambda^2}{1-\lambda}$ & $\frac{\lambda^2+\lambda^3-\lambda^4}{(1-\lambda)^2}$  \\ [2ex] 
+ \hline
+\end{tabular}
+\end{center}
 
-\subsubsection{Modelagem Geral}
-\subsubsection{Tempo de Espera}
-\subsubsection{Número de Pessoas em Espera}
+Conheçemos $N_q(z)$ (p. 91 apostila), conheçemos $N(z)$ e seus dois primeiros momentos (p. 90 apostila) e conheçemos $X^*$ (serviço exponencial com taxa 1). 
+
+\[ N_q(z) = \frac{ N(z) - ( 1 - \lambda ) }{ z } \therefore N_q' (z) = \frac{N'(z)}{z} + \frac{N'(z)}{-z^2}\]
+
+Substituindo $z=1$
+
+\[ N_q' (1) = E[N] + N(z) - (1-\lambda)\]
+
 
 \section{Conclusões}
 
