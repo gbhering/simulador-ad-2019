@@ -7,11 +7,11 @@ using namespace std;
 
 // Constantes do programa
 bool const FCFS = true;
-unsigned const RODADAS = 10;
+unsigned const RODADAS = 1000;
 float const KMIN = 100000;
 float const MI = 1.0;
 float const LAMBDA = 0.4;
-unsigned const VERBOSE = 1;
+unsigned const VERBOSE = 0;
 
 float W[RODADAS] = {};
 float N_q[RODADAS] = {};
