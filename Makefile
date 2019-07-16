@@ -1,8 +1,15 @@
+STD=c++17
+MAINFILE=sim.cc
+PYTHONLIB=-I/usr/include/python2.7 -lpython2.7
+
 all: 
-	g++ sim.cc --std=c++17 -Wall -pedantic && ./a.out
+	g++ $(MAINFILE) --std=$(STD) $(PYTHONLIB) -Wall -pedantic
 
 final: 
-	g++ sim.cc --std=c++17 -O3 -Wall -pedantic -Werror && ./a.out
+	g++ $(MAINFILE) --std=$(STD) $(PYTHONLIB) -O3 -w
+
+run: final
+	./a.out
 
 clean:
 	rm a.out

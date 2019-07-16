@@ -5,7 +5,7 @@ enum Tipo { chegada, partida, deltat };
 struct Evento {
 	Tipo tipo; 		// Chegada ou partida
 	double t; 		// Tempo quando acontece
-	unsigned r;		// Identificador da rodada
+	int r;			// Identificador da rodada
 
 	// Construtor trivial, existe para que seja possível criar novos eventos com facilidade
 	Evento(Tipo tipo, double t, unsigned r) : tipo(tipo), t(t), r(r) {};

@@ -1,137 +1,179 @@
 #include <cmath>
+#include <deque>
 #include <iostream>
 #include <queue>
-#include <deque>
+
 #include "eventos.h"
 #include "exponencial.h"
+#include "gabarito.h"
+
+#include "matplotlibcpp.h"
+namespace plt = matplotlibcpp;
+
 using namespace std;
 
-// Constantes do programa
-bool const FCFS = true;
-unsigned const RODADAS = 3200;
-float const KMIN = 2000;
-float const MI = 1.0;
-float const LAMBDA = 0.9;
-unsigned const VERBOSE = 0;
-bool const TESTE = false;
+const float LAMBDA = 0.9;
+const float MU = 1.0;
+const int RODADAS = 320;
+const int KMIN = 200;
+const bool FCFS = true;
 
-float W[RODADAS] = {};
-float N_q[RODADAS] = {};
+priority_queue<Evento> lista_eventos;
+deque<Evento> fila_espera;
+float ultima_chegada_agendada = 0.0;
+float ultima_partida_agendada = 0.0;
+float tempo_atual = 0.0;
+bool servidor_ocupado = false;
 
-// Variaveis da execução
-float T = 0.0;					// Tempo do simulador
-float N = 0;					// Pessoas encontradas no sistema 
-float N_PREV = 0;					// Pessoas encontradas no sistema 
-unsigned R = 0;					// Contador de Rodada
-priority_queue<Evento> fila;	// Nossa fila de eventos
-deque<Evento> espera;			// Os tempos de chegada para medida futura
+float Nq_experimento=0, W_experimento=0;
 
-/* 
-	A única dinstinção entre as duas disciplinas implementadas está aqui.
-	Os tempos de chegadas na fila são em uma fila de duas pontas quando
-	um evento de chegada é processado. Esta função agenda um novo evento
-	de partida e consome uma chegada computada, da frente da fila se FCFS
-	ou de trás se LCFS. Tempos de espera são calculados aqui. Apenas se
-	a chegada consumida pertence a rodada atual.
-*/
-void entra_servidor(float& w_i, float& k) {
-	fila.emplace(partida, T + exponencial(MI), R);
-	if constexpr (FCFS) {
-		Evento proximo = espera.front();
-		espera.pop_front();
-		if (proximo.r == R) {
-			w_i += T-proximo.t; ++k;
-		}
+inline void agenda_nova_chegada_exponencial(const int& r) { 
+	float t = ultima_chegada_agendada + exponencial(LAMBDA);
+	lista_eventos.emplace(chegada, t, r); 
+	ultima_chegada_agendada = t;
+}
+
+inline void agenda_nova_partida_exponencial(const int& r) { 
+	float t = tempo_atual + exponencial(MU);
+	lista_eventos.emplace(partida, t, r); 
+	ultima_partida_agendada = t;
+}
+
+auto prox_fila_espera() {
+	if (FCFS) {
+		auto proximo_a_ser_atendido = fila_espera.front();
+		fila_espera.pop_front(); 
+		return proximo_a_ser_atendido;
 	}
 	else {
-		Evento proximo = espera.back();
-		espera.pop_back();
-		if (proximo.r == R) {
-			w_i += T-proximo.t; ++k;
-		}
+		auto proximo_a_ser_atendido = fila_espera.back();
+		fila_espera.pop_back(); 
+		return proximo_a_ser_atendido;
 	}
 }
 
-/*
-	Esta função é a que executa o loop de cada rodada. Até que KMIN coletas de 
-	tempos de espera sejam feitas, a rodada continua. 
-*/
-void rodada() {
-	float k = 0, w_i = 0, N_qi = 0, t0 = T;
-	while (k <= KMIN and !fila.empty()) {
-		// Pirmeiro evento da fila é extraído
-		Evento e = fila.top();	fila.pop();
-		float delta = e.t - T;
-		// Tempo avança
-		T = e.t;
-		// Número de pessoas é computado
-		N_qi += espera.size()*delta;
-		// Caso o próximo evento seja uma chegada...
-		if ( e.tipo == chegada ) {
-			// Uma nova pessoa entra no sistema 
-			N++; 
-			// Esta chegada é aramazenada
-			espera.push_back(e);
-			// Próxima chegada é agendada
-			if constexpr (!TESTE)
-				fila.emplace(chegada, T + exponencial(LAMBDA), R);
-			// Caso seja a única pessoa no sistema, 
-			if ( N == 1 ) 
-				// entra imediatemente no servidor
-				entra_servidor(w_i, k);
-		} 
-		// Caso o próximo evento seja uma partida...
-		else if ( e.tipo == partida ) {
-			// Uma pessoa sai do sistema
-			N--;
-			// Se ainda há pessoas no sistema, agenda uma nova partida
-			if ( N > 0 ) 
-				entra_servidor(w_i, k);
+const int eventos_logados = RODADAS*KMIN;
+vector<float> tempinhos(eventos_logados);
+vector<float> tamaninhos(eventos_logados); 
+vector<float> medinhas(eventos_logados, ENq(LAMBDA));
+auto counter = 1;
+void grafico_pessoas_em_fila() {
+	if (counter>=eventos_logados) return;
+	tempinhos.at(counter) = tempinhos.at(counter-1);
+	tamaninhos.at(counter) = (fila_espera.size());
+	counter++;
+	if (counter>=eventos_logados) return;
+	tempinhos.at(counter) = (tempo_atual);
+	tamaninhos.at(counter) = (fila_espera.size());
+	counter++;
+}
+
+void print_fila_espera() {
+	cout<<"Fila de Espera("<<fila_espera.size()<<"): ";
+	for (auto x: fila_espera) {
+		if (x.tipo != chegada) exit(-100);
+		cout<<"("<<x.t<<") ";
+	}
+	cout<<endl;
+}
+
+void print_lista_eventos(priority_queue<Evento> lista) {
+	cout<<"Eventos("<<lista.size()<<"): ";
+	while (!lista.empty()) {
+		auto x = lista.top(); lista.pop();
+		cout<<"("<<x.t<<","<<(x.tipo==chegada?"chegada":"partida")<<") ";
+	}
+	cout<<endl;
+}
+
+void debug() {
+	cout<<"Servidor "<<(servidor_ocupado?"":"des")<<"ocupado!\n";
+	print_lista_eventos(lista_eventos);
+	print_fila_espera();
+	cin.get();
+}
+
+void rodada(const int& r) {
+	float Nq_rodada=0, W_rodada=0, t0=tempo_atual;
+	for (int k = 0; k < KMIN and !lista_eventos.empty();) {
+		Evento prox_evento = lista_eventos.top();
+		if ( prox_evento.tipo == chegada ) {
+			Nq_rodada+=(prox_evento.t-tempo_atual)*fila_espera.size();
+			tempo_atual = prox_evento.t;
+			agenda_nova_chegada_exponencial(r);
+			if (servidor_ocupado) {
+				// entrada na fila de espera
+				grafico_pessoas_em_fila();
+				fila_espera.push_back(prox_evento);
+			}
+			else {
+				servidor_ocupado = true;
+				agenda_nova_partida_exponencial(r);
+				k++;
+			}
+			lista_eventos.pop();
 		}
-		else if ( e.tipo == deltat ) {
-			// cout << N << ',';
-			// fila.emplace(deltat, T+10, R);
-			N_PREV = N;
+		else if ( prox_evento.tipo == partida ) {
+			if ( ultima_chegada_agendada < ultima_partida_agendada ) {
+				agenda_nova_chegada_exponencial(r);
+			}
+			else {
+				Nq_rodada+=(prox_evento.t-tempo_atual)*fila_espera.size();
+				tempo_atual = prox_evento.t;
+				lista_eventos.pop();
+				if ( !fila_espera.empty() ) {
+					// saída da fila de espera
+					grafico_pessoas_em_fila();
+					agenda_nova_partida_exponencial(r);
+					auto proximo = prox_fila_espera();
+					if (proximo.r == r) {
+						W_rodada+=(tempo_atual-proximo.t)/KMIN;
+						k++;
+					}
+				}
+				else {
+					servidor_ocupado = false;
+				}
+			}
 		}
 	}
+	Nq_rodada /= (tempo_atual-t0);
+	if ( r % static_cast<int>(powf(10.0f, floorf(log10f(RODADAS))-1)) == 0 ) {
+		cout<<"Rodada "<<r<<":"<<endl;
+		cout<<" E[Nq]= "<<(Nq_rodada)<<"("<<ENq(LAMBDA)<<") ";
+		cout<<" E[W]= "<<(W_rodada)<<"("<<EW(LAMBDA)<<") ";
+		cout<<endl;
+	}
+	Nq_experimento+=Nq_rodada/RODADAS;
+	W_experimento+=W_rodada/RODADAS;
+}
 
-	// Guarda-se as estatisticas ao fim da rodada em vetores 
-	// O total de tempo esperado é dividido pelo número de pessoas
-	W[R] = w_i/KMIN; 
-	// O resultado da área do gráfico é dividido pelo tempo total 
-	N_q[R] = N_qi/(T-t0);
-	if (VERBOSE > 0) 
-		cout << R<< '(' << W[R] << ", " << N_q[R] << ')' << endl;
-} 
-
-void teste1() { for(int i = 0; i < KMIN; ++i) fila.emplace(chegada, T, R); }
-void teste2() { for(int i = 0; i < KMIN; ++i) fila.emplace(chegada, T+i, R); }
 int main(void) {
-	// primeira chegada é agendada
-	fila.emplace(chegada, T + exponencial(LAMBDA), R);
-	fila.emplace(deltat, T, R);
-	while (R < RODADAS) {
-		rodada();
-		R++;
-	}
+	agenda_nova_chegada_exponencial(0);
+	for (int r = 1; r <= RODADAS; ++r)
+		rodada(r);
 
-	cout<<endl<<"rodadas="<<RODADAS<<" kmin="<<KMIN<<" lambda="<<LAMBDA<<endl;
+	cout<<endl;
 
-	// ao fim das rodadas, calculamos as médias...
-	float ENq = 0, VNq = 0, EW = 0, VW = 0;
-	for (unsigned i = 0; i < RODADAS; ++i) {
-		ENq += N_q[i]/RODADAS;
-		EW += W[i]/RODADAS;
-	}
-	// ...depois as variancias
-	for (unsigned i = 0; i < RODADAS; ++i) {
-		VNq += pow( (N_q[i]-ENq), 2 ) / ( RODADAS-1 );
-		VW += pow( W[i]-EW, 2 ) / ( RODADAS-1 );
-	}
-	cout << "E[W]=" << EW << " E[Nq]=" << ENq << endl;
-	cout << "Var[W]=" << VW << " Var[Nq]=" << VNq << endl;
+	cout<<"Parametros:"<<endl;
+	cout<<" KMIN:"<<KMIN<<" ";
+	cout<<" RODADAS:"<<RODADAS<<" ";
+	cout<<" LAMBDA:"<<LAMBDA<<" ";
+	cout<<" DISC:"<<(FCFS?"FCFS":"LCLS")<<" ";
+	cout<<endl;
 
-	cout << "Ultimo estado do gerador: " << gen << endl;
+	cout<<"Resultados do Experimento:"<<endl;
+	cout<<" E[Nq]= "<<Nq_experimento<<"("<<ENq(LAMBDA)<<") ";
+	cout<<" E[W]= "<<W_experimento<<"("<<EW(LAMBDA)<<") ";
+	cout<<endl;
+
+	cout<<"Etc:"<<endl;
+	cout<<" Ultima seed: "<<gen();
+	cout<<endl;
+
+	plt::plot(tempinhos,tamaninhos);
+	plt::plot(tempinhos, medinhas,"r--");
+	plt::show();
 
 	return 0;
 }
