@@ -12,29 +12,41 @@ namespace plt = matplotlibcpp;
 
 using namespace std;
 
-const float LAMBDA = 0.9;
-const float MU = 1.0;
-const int RODADAS = 320;
-const int KMIN = 200;
+const double LAMBDA = 0.9;
+const double MU = 1.0;
+const int RODADAS = 3200;
+const int KMIN = 20000;
 const bool FCFS = true;
 
 priority_queue<Evento> lista_eventos;
 deque<Evento> fila_espera;
-float ultima_chegada_agendada = 0.0;
-float ultima_partida_agendada = 0.0;
-float tempo_atual = 0.0;
+double ultima_chegada_agendada = 0.0;
+double ultima_partida_agendada = 0.0;
+double tempo_atual = 0.0;
 bool servidor_ocupado = false;
 
-float Nq_experimento=0, W_experimento=0;
+double Nq_experimento=0, W_experimento=0;
+
+
+template<typename T>
+void print(T value){
+  cout << value << endl;
+}
+
+template<typename T, typename... Args>
+void print(T value, Args... args){
+  cout << value << " ";
+  print(args...);
+}
 
 inline void agenda_nova_chegada_exponencial(const int& r) { 
-	float t = ultima_chegada_agendada + exponencial(LAMBDA);
+	double t = ultima_chegada_agendada + exponencial(LAMBDA);
 	lista_eventos.emplace(chegada, t, r); 
 	ultima_chegada_agendada = t;
 }
 
 inline void agenda_nova_partida_exponencial(const int& r) { 
-	float t = tempo_atual + exponencial(MU);
+	double t = tempo_atual + exponencial(MU);
 	lista_eventos.emplace(partida, t, r); 
 	ultima_partida_agendada = t;
 }
@@ -53,9 +65,9 @@ auto prox_fila_espera() {
 }
 
 const int eventos_logados = RODADAS*KMIN;
-vector<float> tempinhos(eventos_logados);
-vector<float> tamaninhos(eventos_logados); 
-vector<float> medinhas(eventos_logados, ENq(LAMBDA));
+vector<double> tempinhos(eventos_logados);
+vector<double> tamaninhos(eventos_logados); 
+vector<double> medinhas(eventos_logados, ENq(LAMBDA));
 auto counter = 1;
 void grafico_pessoas_em_fila() {
 	if (counter>=eventos_logados) return;
@@ -94,7 +106,7 @@ void debug() {
 }
 
 void rodada(const int& r) {
-	float Nq_rodada=0, W_rodada=0, t0=tempo_atual;
+	double Nq_rodada=0, W_rodada=0, t0=tempo_atual;
 	for (int k = 0; k < KMIN and !lista_eventos.empty();) {
 		Evento prox_evento = lista_eventos.top();
 		if ( prox_evento.tipo == chegada ) {
@@ -170,6 +182,8 @@ int main(void) {
 	cout<<"Etc:"<<endl;
 	cout<<" Ultima seed: "<<gen();
 	cout<<endl;
+
+	print("TEST:",sizeof(float),sizeof(double));
 
 	plt::plot(tempinhos,tamaninhos);
 	plt::plot(tempinhos, medinhas,"r--");
