@@ -28,17 +28,6 @@ bool servidor_ocupado = false;
 double Nq_experimento=0, W_experimento=0;
 
 
-template<typename T>
-void print(T value){
-  cout << value << endl;
-}
-
-template<typename T, typename... Args>
-void print(T value, Args... args){
-  cout << value << " ";
-  print(args...);
-}
-
 inline void agenda_nova_chegada_exponencial(const int& r) { 
 	double t = ultima_chegada_agendada + exponencial(LAMBDA);
 	lista_eventos.emplace(chegada, t, r); 
@@ -52,57 +41,16 @@ inline void agenda_nova_partida_exponencial(const int& r) {
 }
 
 auto prox_fila_espera() {
-	if (FCFS) {
-		auto proximo_a_ser_atendido = fila_espera.front();
+	auto proximo_a_ser_atendido = fila_espera.front();
+	if constexpr (FCFS) {
 		fila_espera.pop_front(); 
 		return proximo_a_ser_atendido;
 	}
-	else {
-		auto proximo_a_ser_atendido = fila_espera.back();
+	if constexpr (!FCFS) {
+		proximo_a_ser_atendido = fila_espera.back();
 		fila_espera.pop_back(); 
 		return proximo_a_ser_atendido;
 	}
-}
-
-const int eventos_logados = RODADAS*KMIN;
-vector<double> tempinhos(eventos_logados);
-vector<double> tamaninhos(eventos_logados); 
-vector<double> medinhas(eventos_logados, ENq(LAMBDA));
-auto counter = 1;
-void grafico_pessoas_em_fila() {
-	if (counter>=eventos_logados) return;
-	tempinhos.at(counter) = tempinhos.at(counter-1);
-	tamaninhos.at(counter) = (fila_espera.size());
-	counter++;
-	if (counter>=eventos_logados) return;
-	tempinhos.at(counter) = (tempo_atual);
-	tamaninhos.at(counter) = (fila_espera.size());
-	counter++;
-}
-
-void print_fila_espera() {
-	cout<<"Fila de Espera("<<fila_espera.size()<<"): ";
-	for (auto x: fila_espera) {
-		if (x.tipo != chegada) exit(-100);
-		cout<<"("<<x.t<<") ";
-	}
-	cout<<endl;
-}
-
-void print_lista_eventos(priority_queue<Evento> lista) {
-	cout<<"Eventos("<<lista.size()<<"): ";
-	while (!lista.empty()) {
-		auto x = lista.top(); lista.pop();
-		cout<<"("<<x.t<<","<<(x.tipo==chegada?"chegada":"partida")<<") ";
-	}
-	cout<<endl;
-}
-
-void debug() {
-	cout<<"Servidor "<<(servidor_ocupado?"":"des")<<"ocupado!\n";
-	print_lista_eventos(lista_eventos);
-	print_fila_espera();
-	cin.get();
 }
 
 void rodada(const int& r) {
@@ -115,12 +63,11 @@ void rodada(const int& r) {
 			agenda_nova_chegada_exponencial(r);
 			if (servidor_ocupado) {
 				// entrada na fila de espera
-				grafico_pessoas_em_fila();
 				fila_espera.push_back(prox_evento);
 			}
 			else {
 				servidor_ocupado = true;
-				agenda_nova_partida_exponencial(r);
+				agenda_nova_partida_exponencial(r);	
 				k++;
 			}
 			lista_eventos.pop();
@@ -135,7 +82,6 @@ void rodada(const int& r) {
 				lista_eventos.pop();
 				if ( !fila_espera.empty() ) {
 					// saída da fila de espera
-					grafico_pessoas_em_fila();
 					agenda_nova_partida_exponencial(r);
 					auto proximo = prox_fila_espera();
 					if (proximo.r == r) {
@@ -183,11 +129,6 @@ int main(void) {
 	cout<<" Ultima seed: "<<gen();
 	cout<<endl;
 
-	print("TEST:",sizeof(float),sizeof(double));
-
-	plt::plot(tempinhos,tamaninhos);
-	plt::plot(tempinhos, medinhas,"r--");
-	plt::show();
 
 	return 0;
 }
